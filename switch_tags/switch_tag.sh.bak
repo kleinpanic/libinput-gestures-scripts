@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Function to get the current tag (workspace)
+get_current_tag() {
+    dwm-msg get_monitors | jq -r '.[0].tagset.current'
+}
+
+# Read the current tag number
+current_tag=$(get_current_tag)
+
+# Ensure current_tag is a valid number
+if ! [[ "$current_tag" =~ ^[0-9]+$ ]]; then
+    echo "Error: Invalid current tag number"
+    exit 1
+fi
+
+echo "Current tag: $current_tag"
+
+if [ "$1" == "next" ]; then
+    next_tag=$(( (current_tag + 1) % 9 ))
+    next_tag=$((next_tag == 0 ? 9 : next_tag))  # Adjust for 1-based index
+    echo "Switching to next tag: $next_tag"
+    xdotool key Super_L+$next_tag  # Use xdotool to switch tags
+elif [ "$1" == "prev" ]; then
+    prev_tag=$(( (current_tag - 1 + 9 - 1) % 9 + 1 ))  # Adjust for 1-based index
+    echo "Switching to previous tag: $prev_tag"
+    xdotool key Super_L+$prev_tag  # Use xdotool to switch tags
+else
+    echo "Usage: $0 {next|prev}"
+    exit 1
+fi
